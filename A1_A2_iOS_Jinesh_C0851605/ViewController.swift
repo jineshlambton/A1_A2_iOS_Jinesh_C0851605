@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  A1_A2_iOS_Jinesh_C0851605
 //
-//  Created by Vraj Patel on 24/05/22.
+//  Created by Jinesh Patel on 24/05/22.
 //
 
 import UIKit
