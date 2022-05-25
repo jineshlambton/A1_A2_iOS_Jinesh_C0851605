@@ -13,6 +13,9 @@
 		ACDFC703283D961A009BD32D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACDFC701283D961A009BD32D /* Main.storyboard */; };
 		ACDFC705283D961B009BD32D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACDFC704283D961B009BD32D /* Assets.xcassets */; };
 		ACDFC708283D961B009BD32D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACDFC706283D961B009BD32D /* LaunchScreen.storyboard */; };
+		ACDFC710283D9C22009BD32D /* HomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDFC70F283D9C22009BD32D /* HomeVC.swift */; };
+		ACDFC712283DA3BD009BD32D /* SearchCityVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDFC711283DA3BD009BD32D /* SearchCityVC.swift */; };
+		ACDFC714283DA54F009BD32D /* SearchCityCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACDFC713283DA54F009BD32D /* SearchCityCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		ACDFC704283D961B009BD32D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ACDFC707283D961B009BD32D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ACDFC709283D961B009BD32D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ACDFC70F283D9C22009BD32D /* HomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeVC.swift; sourceTree = "<group>"; };
+		ACDFC711283DA3BD009BD32D /* SearchCityVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCityVC.swift; sourceTree = "<group>"; };
+		ACDFC713283DA54F009BD32D /* SearchCityCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCityCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +69,9 @@
 				ACDFC704283D961B009BD32D /* Assets.xcassets */,
 				ACDFC706283D961B009BD32D /* LaunchScreen.storyboard */,
 				ACDFC709283D961B009BD32D /* Info.plist */,
+				ACDFC70F283D9C22009BD32D /* HomeVC.swift */,
+				ACDFC711283DA3BD009BD32D /* SearchCityVC.swift */,
+				ACDFC713283DA54F009BD32D /* SearchCityCell.swift */,
 			);
 			path = A1_A2_iOS_Jinesh_C0851605;
 			sourceTree = "<group>";
@@ -139,7 +148,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				ACDFC700283D961A009BD32D /* ViewController.swift in Sources */,
+				ACDFC710283D9C22009BD32D /* HomeVC.swift in Sources */,
+				ACDFC712283DA3BD009BD32D /* SearchCityVC.swift in Sources */,
 				ACDFC6FC283D961A009BD32D /* AppDelegate.swift in Sources */,
+				ACDFC714283DA54F009BD32D /* SearchCityCell.swift in Sources */,
 				ACDFC6FE283D961A009BD32D /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
