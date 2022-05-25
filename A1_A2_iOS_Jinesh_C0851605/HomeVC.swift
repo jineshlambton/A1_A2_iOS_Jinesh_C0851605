@@ -13,6 +13,7 @@ class HomeVC: UIViewController {
 
     @IBOutlet weak var navBar: UINavigationBar!
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var lblDistance: UILabel!
     
     var locationManager: CLLocationManager!
     
@@ -33,6 +34,53 @@ class HomeVC: UIViewController {
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed))
         self.mapView.addGestureRecognizer(longPressRecognizer)
         
+    }
+    
+    func displayDistance() {
+        lblDistance.text = ""
+        var currentLat = locationManager.location?.coordinate.latitude
+        var currentLong = locationManager.location?.coordinate.longitude
+        
+        var str = ""
+        for i in 0..<arrCity.count {
+            let dist = getDistance(source: locationManager.location!.coordinate, destination: arrCity[i].placemark.coordinate) / 1000.0
+            var strAn = ""
+            if i == 0 {
+                strAn = "A"
+            } else if i == 1 {
+                strAn = "B"
+            } else if i == 2 {
+                strAn = "C"
+            }
+            str += "Current location to \(strAn) : \(getDistanceFormatted(value: dist)) \n "
+        }
+        str += " \n "
+        for i in 0..<arrCity.count {
+//            if i == arrCity.count - 1 {
+//
+//            } else {
+                var strAn = ""
+                if i == 1 {
+                    strAn = "A to B"
+                    let dist = getDistance(source: arrCity[i].placemark.coordinate, destination: arrCity[i-1].placemark.coordinate) / 1000.0
+                    str += "\(strAn) : \(getDistanceFormatted(value: dist)) \n "
+                } else if i == 2 {
+                    strAn = "B to C"
+                    let dist = getDistance(source: arrCity[i].placemark.coordinate, destination: arrCity[i-1].placemark.coordinate) / 1000.0
+                    str += "\(strAn) : \(getDistanceFormatted(value: dist)) \n "
+                    
+                    strAn = "C to A"
+                    let dist1 = getDistance(source: arrCity[i].placemark.coordinate, destination: arrCity[0].placemark.coordinate) / 1000.0
+                    str += "\(strAn) : \(getDistanceFormatted(value: dist1))"
+                }
+            }
+//        }
+        
+        lblDistance.text = str
+    }
+    
+    func getDistanceFormatted(value : Double) -> String {
+        return String(format: "%.2f km", value)
     }
     
     @objc func longPressed(sender: UILongPressGestureRecognizer) {
@@ -154,7 +202,7 @@ extension HomeVC : CLLocationManagerDelegate {
             annotation.coordinate = CLLocationCoordinate2D(latitude: arrCity[i].placemark.coordinate.latitude, longitude: arrCity[i].placemark.coordinate.longitude)
             annotations.append(annotation)
         }
-        
+        displayDistance()
         mapView.addAnnotations(annotations)
         mapView.fitAll(in: annotations, andShow: true)
     }
