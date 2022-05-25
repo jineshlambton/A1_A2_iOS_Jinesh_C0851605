@@ -19,7 +19,9 @@ class HomeVC: UIViewController {
     
     var arrCity : [MKMapItem] = []
     var polygon: MKPolygon? = nil
-                                    	
+                                    
+    let item = UINavigationItem()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
@@ -34,6 +36,38 @@ class HomeVC: UIViewController {
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed))
         self.mapView.addGestureRecognizer(longPressRecognizer)
         
+        
+        item.rightBarButtonItem = UIBarButtonItem(title: "Route", style: .plain, target: self, action: #selector(addPhotosTapped))
+        self.navBar.items = [item]
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        checkRouteOption()
+    }
+    
+    func checkRouteOption() {
+        if arrCity.count > 2 {
+            self.navBar.items = [item]
+        } else {
+            self.navBar.items?.removeAll()
+        }
+    }
+    
+    @objc func addPhotosTapped() {
+        if mapView.overlays.last != nil {
+            self.mapView.removeOverlay(mapView.overlays.last!)
+            polygon = nil
+        }
+        for i in 0..<arrCity.count {
+            if i == 0 {
+                showRoute(source: locationManager.location!.coordinate, destination: arrCity[i].placemark.coordinate, title: "A")
+            } else if i == 1 {
+                showRoute(source: arrCity[i-1].placemark.coordinate, destination: arrCity[i].placemark.coordinate, title: "B")
+            } else if i == 2 {
+                showRoute(source: arrCity[i-1].placemark.coordinate, destination: arrCity[i].placemark.coordinate, title: "C")
+            }
+        }
     }
     
     func displayDistance() {
@@ -77,6 +111,42 @@ class HomeVC: UIViewController {
 //        }
         
         lblDistance.text = str
+    }
+    
+    func showRoute(source : CLLocationCoordinate2D, destination : CLLocationCoordinate2D, title : String) {
+//        let sourceLocation = CLLocationCoordinate2D(latitude:39.173209 , longitude: -94.593933)
+//        let destinationLocation = CLLocationCoordinate2D(latitude:38.643172 , longitude: -90.177429)
+        
+        let sourceLocation = source
+        let destinationLocation = destination
+        
+        let sourcePlaceMark = MKPlacemark(coordinate: sourceLocation)
+        let destinationPlaceMark = MKPlacemark(coordinate: destinationLocation)
+        
+        let directionRequest = MKDirections.Request()
+        directionRequest.source = MKMapItem(placemark: sourcePlaceMark)
+        directionRequest.destination = MKMapItem(placemark: destinationPlaceMark)
+        directionRequest.transportType = .automobile
+        
+        let directions = MKDirections(request: directionRequest)
+        directions.calculate { (response, error) in
+            guard let directionResonse = response else {
+                if let error = error {
+                    print("we have error getting directions==\(error.localizedDescription)")
+                }
+                return
+            }
+            
+            //get route and assign to our route variable
+            let route = directionResonse.routes[0]
+            route.polyline.title = title
+            //add rout to our mapview
+            self.mapView.addOverlay(route.polyline, level: .aboveRoads)
+            
+            //setting rect of our mapview to fit the two locations
+            let rect = route.polyline.boundingMapRect
+            self.mapView.setRegion(MKCoordinateRegion(rect), animated: true)
+        }
     }
     
     func getDistanceFormatted(value : Double) -> String {
@@ -161,6 +231,7 @@ class HomeVC: UIViewController {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.addAnnotations()
+            self.checkRouteOption()
         }
         
     }
@@ -220,9 +291,22 @@ extension HomeVC : SearchCityResult {
 extension HomeVC : MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-        let renderer = MKPolygonRenderer(polygon: polygon!)
-        renderer.fillColor = UIColor.red.withAlphaComponent(0.50)
-        return renderer
+        if polygon == nil {
+            let renderer = MKPolylineRenderer(overlay: overlay)
+            if overlay.title == "A" {
+                renderer.strokeColor = UIColor.blue
+            } else if overlay.title == "B" {
+                renderer.strokeColor = UIColor.red
+            } else if overlay.title == "C" {
+                renderer.strokeColor = UIColor.yellow
+            }
+            renderer.lineWidth = 4.0
+            return renderer
+        } else {
+            let renderer = MKPolygonRenderer(polygon: polygon!)
+            renderer.fillColor = UIColor.red.withAlphaComponent(0.50)
+            return renderer
+        }
     }
 }
 
