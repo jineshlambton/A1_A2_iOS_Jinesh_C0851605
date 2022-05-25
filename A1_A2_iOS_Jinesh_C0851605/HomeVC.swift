@@ -17,10 +17,11 @@ class HomeVC: UIViewController {
     var locationManager: CLLocationManager!
     
     var arrCity : [MKMapItem] = []
+    var polygon: MKPolygon? = nil
                                     	
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        mapView.delegate = self
         if (CLLocationManager.locationServicesEnabled())
         {
             locationManager = CLLocationManager()
@@ -52,15 +53,79 @@ class HomeVC: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    func addPolygon() {
+        var points: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
+        
+        for i in 0..<arrCity.count {
+            points.append(arrCity[i].placemark.coordinate)
+        }
+        
+        let polygon = MKPolygon(coordinates: points, count: points.count)
+        self.polygon = polygon
+        mapView.addOverlay(polygon)
+    }
     
-    @IBAction func barBtnAddTap(_ sender: Any) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            if touch.tapCount == 1 {
+                let touchLocation = touch.location(in: self.mapView)
+                let locationCoordinate = mapView.convert(touchLocation, toCoordinateFrom: mapView)
+                
+                for polygon in mapView.overlays as! [MKPolygon] {
+                    let renderer = MKPolygonRenderer(polygon: polygon)
+                    let mapPoint = MKMapPoint(locationCoordinate)
+                    let viewPoint = renderer.point(for: mapPoint)
+                    if polygon.contain(coor: locationCoordinate) {
+//                    if renderer.path.contains(viewPoint) {
+                        print("With in range")
+                        checkPoint(location: locationCoordinate)
+                    } else {
+                        print("out side of range")
+                    }
+                }
+            }
+        }
         
-        
-        
+        super.touchesEnded(touches, with: event)
+    }
+    
+    func checkPoint(location : CLLocationCoordinate2D) {
+        var arrDistance : [Double] = []
+        for i in 0..<arrCity.count {
+            let dist = getDistance(source: location, destination: arrCity[i].placemark.coordinate)
+            arrDistance.append(dist)
+        }
+        let ss = arrDistance.max { a, b in
+            return a > b
+        }
+        var index = 0
+        for i in 0..<arrDistance.count {
+            if ss == arrDistance[i] {
+                index = i
+                break
+            }
+        }
+        arrCity.remove(at: index)
+//        mapView.removeAnnotation(annotations[index])
+        mapView.removeAnnotations(mapView.annotations)
+        if mapView.overlays.last != nil {
+            mapView.removeOverlay(mapView.overlays.last!)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.addAnnotations()
+        }
         
     }
     
+    func getDistance(source : CLLocationCoordinate2D, destination : CLLocationCoordinate2D) ->  Double {
+        let coordinate₀ = CLLocation(latitude: source.latitude, longitude: source.longitude)
+        let coordinate₁ = CLLocation(latitude: destination.latitude, longitude: destination.longitude)
+
+        let distanceInMeters = coordinate₀.distance(from: coordinate₁)
+        return Double(distanceInMeters)
+    }
 }
+
 extension HomeVC : CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last{
@@ -68,22 +133,11 @@ extension HomeVC : CLLocationManagerDelegate {
             let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 2.0, longitudeDelta: 2.0))
             self.mapView.setRegion(region, animated: true)
             mapView.showsUserLocation = true
-//            var coordinate = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-//            let annotation = MKPointAnnotation()
-//            annotation.coordinate = coordinate
-//            mapView.addAnnotation(annotation)
-            
         }
     }
-}
-
-extension HomeVC : SearchCityResult {
     
-    func searchedCity(item: MKMapItem) {
-        arrCity.append(item)
-        
+    func addAnnotations() {
         var annotations = [MKAnnotation]()
-        
         for i in 0..<arrCity.count {
             let annotation = MKPointAnnotation()
             if i == 0 {
@@ -92,58 +146,36 @@ extension HomeVC : SearchCityResult {
                 annotation.title = "B"
             } else if i == 2 {
                 annotation.title = "C"
+                addPolygon()
             } else {
                 annotation.title = ""
             }
             
             annotation.coordinate = CLLocationCoordinate2D(latitude: arrCity[i].placemark.coordinate.latitude, longitude: arrCity[i].placemark.coordinate.longitude)
             annotations.append(annotation)
-
         }
-       
         
         mapView.addAnnotations(annotations)
-        
         mapView.fitAll(in: annotations, andShow: true)
-//        if let lastAnnotation = annotations.last {
-//            let region = MKCoordinateRegion(center: lastAnnotation.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
-//            mapView.setRegion(region, animated: true)
-//        }
     }
+}
+
+extension HomeVC : SearchCityResult {
     
+    func searchedCity(item: MKMapItem) {
+        arrCity.append(item)
+        addAnnotations()
+    }
     
 }
-extension MKMapView {
 
-    /// When we call this function, we have already added the annotations to the map, and just want all of them to be displayed.
-    func fitAll() {
-        var zoomRect            = MKMapRect.null;
-        for annotation in annotations {
-            let annotationPoint = MKMapPoint(annotation.coordinate)
-            let pointRect       = MKMapRect(x: annotationPoint.x, y: annotationPoint.y, width: 0.01, height: 0.01);
-            zoomRect            = zoomRect.union(pointRect);
-        }
-        setVisibleMapRect(zoomRect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
-    }
-
-    /// We call this function and give it the annotations we want added to the map. we display the annotations if necessary
-    func fitAll(in annotations: [MKAnnotation], andShow show: Bool) {
-        var zoomRect:MKMapRect  = MKMapRect.null
+extension HomeVC : MKMapViewDelegate {
     
-        for annotation in annotations {
-            let aPoint          = MKMapPoint(annotation.coordinate)
-            let rect            = MKMapRect(x: aPoint.x, y: aPoint.y, width: 0.1, height: 0.1)
-        
-            if zoomRect.isNull {
-                zoomRect = rect
-            } else {
-                zoomRect = zoomRect.union(rect)
-            }
-        }
-        if(show) {
-            addAnnotations(annotations)
-        }
-        setVisibleMapRect(zoomRect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolygonRenderer(polygon: polygon!)
+        renderer.fillColor = UIColor.red.withAlphaComponent(0.50)
+        return renderer
     }
-
 }
+
+
